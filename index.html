@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SDIA — Domain Intelligence Demo</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0b0d10;
+      color: #e8edf2;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    main {
+      width: min(900px, calc(100% - 32px));
+      margin: 70px auto;
+    }
+    h1 { margin-bottom: 8px; }
+    .muted { color: #8d98a5; }
+    .box {
+      border: 1px solid #242a31;
+      background: #11151a;
+      border-radius: 10px;
+      padding: 22px;
+      margin-top: 24px;
+    }
+    form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    input {
+      flex: 1;
+      min-width: 240px;
+      padding: 13px;
+      border-radius: 7px;
+      border: 1px solid #303841;
+      background: #090b0e;
+      color: white;
+      font-size: 16px;
+    }
+    button {
+      padding: 13px 20px;
+      border: 0;
+      border-radius: 7px;
+      background: #e8edf2;
+      color: #0b0d10;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    .metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
+    }
+    .metric {
+      border: 1px solid #242a31;
+      padding: 16px;
+      border-radius: 8px;
+    }
+    .metric strong {
+      display: block;
+      font-size: 25px;
+      margin-top: 5px;
+    }
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #b9c3ce;
+    }
+    @media (max-width: 650px) {
+      .metrics { grid-template-columns: repeat(2, 1fr); }
+      main { margin-top: 35px; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SDIA</h1>
+    <div class="muted">ShadowNode Domain Intelligence Analyzer — Early Demo</div>
+
+    <section class="box">
+      <p>Analyze a domain using the ShadowNode intelligence engine.</p>
+
+      <form id="form">
+        <input
+          id="domain"
+          type="text"
+          placeholder="example.com"
+          autocomplete="off"
+          required
+        >
+        <button id="analyze" type="submit">Analyze</button>
+      </form>
+
+      <p id="status" class="muted"></p>
+    </section>
+
+    <section id="results" class="box" hidden>
+      <h2 id="result-domain"></h2>
+
+      <div class="metrics">
+        <div class="metric">
+          Entities
+          <strong id="entities">—</strong>
+        </div>
+        <div class="metric">
+          Relationships
+          <strong id="relationships">—</strong>
+        </div>
+        <div class="metric">
+          Findings
+          <strong id="findings">—</strong>
+        </div>
+        <div class="metric">
+          Evidence
+          <strong id="evidence">—</strong>
+        </div>
+      </div>
+
+      <h3>Response</h3>
+      <pre id="response"></pre>
+    </section>
+  </main>
+
+  <script>
+    /*
+      Replace this URL with your deployed SDIA API endpoint.
+
+      IMPORTANT:
+      Do not put API keys, private credentials, or the SDIA source code here.
+      GitHub Pages is public.
+    */
+    const SDIA_API = "https://YOUR-SDIA-API-DOMAIN/api/v1/analyze/domain";
+
+    const form = document.getElementById("form");
+    const domainInput = document.getElementById("domain");
+    const button = document.getElementById("analyze");
+    const status = document.getElementById("status");
+    const results = document.getElementById("results");
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const domain = domainInput.value.trim();
+      if (!domain) return;
+
+      button.disabled = true;
+      status.textContent = "Analyzing...";
+      results.hidden = true;
+
+      try {
+        const response = await fetch(SDIA_API, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ domain })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.detail || "Analysis failed.");
+        }
+
+        document.getElementById("result-domain").textContent =
+          data.investigation?.domain || domain;
+
+        document.getElementById("entities").textContent =
+          Array.isArray(data.entities) ? data.entities.length : "—";
+
+        document.getElementById("relationships").textContent =
+          Array.isArray(data.relationships) ? data.relationships.length : "—";
+
+        document.getElementById("findings").textContent =
+          Array.isArray(data.findings) ? data.findings.length : "—";
+
+        document.getElementById("evidence").textContent =
+          Array.isArray(data.evidence) ? data.evidence.length : "—";
+
+        document.getElementById("response").textContent =
+          JSON.stringify(data, null, 2);
+
+        results.hidden = false;
+        status.textContent = "Analysis complete.";
+      } catch (error) {
+        status.textContent = "Error: " + error.message;
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>
