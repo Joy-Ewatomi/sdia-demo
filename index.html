@@ -1,198 +1,1842 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SDIA — Domain Intelligence Demo</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>SDIA — ShadowNode Domain Intelligence Analyzer</title>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
-      background: #0b0d10;
-      color: #e8edf2;
+      background: #070707;
+      color: #e8e8e8;
       font-family: Arial, Helvetica, sans-serif;
+      line-height: 1.5;
     }
-    main {
-      width: min(900px, calc(100% - 32px));
-      margin: 70px auto;
+
+    .container {
+      width: min(1100px, 92%);
+      margin: 0 auto;
+      padding: 50px 0 80px;
     }
-    h1 { margin-bottom: 8px; }
-    .muted { color: #8d98a5; }
-    .box {
-      border: 1px solid #242a31;
-      background: #11151a;
-      border-radius: 10px;
-      padding: 22px;
-      margin-top: 24px;
+
+    header {
+      margin-bottom: 35px;
     }
-    form {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
+
+    .brand {
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: #8cff00;
+      font-weight: bold;
+      margin-bottom: 10px;
     }
-    input {
-      flex: 1;
-      min-width: 240px;
-      padding: 13px;
-      border-radius: 7px;
-      border: 1px solid #303841;
-      background: #090b0e;
-      color: white;
+
+    h1 {
+      margin: 0;
+      font-size: 42px;
+      line-height: 1.1;
+      color: #ffffff;
+    }
+
+    .subtitle {
+      margin-top: 12px;
+      color: #929292;
       font-size: 16px;
     }
-    button {
-      padding: 13px 20px;
-      border: 0;
-      border-radius: 7px;
-      background: #e8edf2;
-      color: #0b0d10;
-      font-weight: 700;
-      cursor: pointer;
+
+    .search-box {
+      display: flex;
+      gap: 10px;
+      margin-top: 30px;
     }
-    button:disabled { opacity: .5; cursor: not-allowed; }
+
+    input {
+      flex: 1;
+      min-width: 0;
+      padding: 15px 16px;
+      background: #101010;
+      border: 1px solid #292929;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #8cff00;
+    }
+
+    button {
+      padding: 15px 24px;
+      border: none;
+      border-radius: 6px;
+      background: #8cff00;
+      color: #050505;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 15px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: wait;
+    }
+
+    .status {
+      margin-top: 18px;
+      color: #888;
+      min-height: 24px;
+    }
+
+    .error {
+      color: #ff6969;
+    }
+
+    .results {
+      display: none;
+      margin-top: 35px;
+    }
+
+    .results.visible {
+      display: block;
+    }
+
+    .section {
+      background: #0d0d0d;
+      border: 1px solid #242424;
+      border-radius: 8px;
+      margin-bottom: 22px;
+      overflow: hidden;
+    }
+
+    .section-header {
+      padding: 18px 20px;
+      border-bottom: 1px solid #242424;
+      background: #111111;
+    }
+
+    .section-header h2 {
+      margin: 0;
+      font-size: 18px;
+      color: #ffffff;
+    }
+
+    .section-header p {
+      margin: 5px 0 0;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .section-body {
+      padding: 22px;
+    }
+
     .metrics {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-top: 20px;
+      gap: 12px;
     }
+
     .metric {
-      border: 1px solid #242a31;
-      padding: 16px;
-      border-radius: 8px;
+      background: #111111;
+      border: 1px solid #252525;
+      border-radius: 6px;
+      padding: 18px;
     }
-    .metric strong {
-      display: block;
-      font-size: 25px;
+
+    .metric-label {
+      color: #777;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .metric-value {
       margin-top: 5px;
+      font-size: 28px;
+      color: #ffffff;
+      font-weight: bold;
     }
-    pre {
+
+    .domain-line {
+      margin-bottom: 20px;
+      color: #999;
+    }
+
+    .domain-line strong {
+      color: #ffffff;
+    }
+
+    .observations {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .observation {
+      border: 1px solid #252525;
+      background: #111111;
+      border-radius: 6px;
+      padding: 13px 15px;
+      color: #cfcfcf;
+    }
+
+    .observation::before {
+      content: "•";
+      color: #8cff00;
+      margin-right: 9px;
+    }
+
+    .notice {
+      margin-top: 18px;
+      padding: 14px 16px;
+      background: #17130b;
+      border: 1px solid #453919;
+      border-radius: 6px;
+      color: #c6b98c;
+      font-size: 13px;
+    }
+
+    .analyst-warning {
+      padding: 15px 17px;
+      margin-bottom: 20px;
+      background: #15110a;
+      border: 1px solid #5b481b;
+      border-radius: 6px;
+      color: #d7c27d;
+    }
+
+    .analyst-warning strong {
+      color: #ffffff;
+    }
+
+    .report {
       white-space: pre-wrap;
-      word-break: break-word;
-      color: #b9c3ce;
+      color: #cfcfcf;
+      font-size: 14px;
+      line-height: 1.65;
     }
-    @media (max-width: 650px) {
-      .metrics { grid-template-columns: repeat(2, 1fr); }
-      main { margin-top: 35px; }
+
+    .raw-toggle {
+      width: 100%;
+      text-align: left;
+      background: #151515;
+      color: #ffffff;
+      border: 1px solid #2b2b2b;
+      font-weight: normal;
+      padding: 13px 15px;
+      margin-bottom: 15px;
+    }
+
+    .raw-container {
+      display: none;
+    }
+
+    .raw-container.open {
+      display: block;
+    }
+
+    pre {
+      margin: 0;
+      padding: 18px;
+      background: #050505;
+      border: 1px solid #202020;
+      border-radius: 6px;
+      overflow: auto;
+      max-height: 650px;
+      color: #bdbdbd;
+      font-size: 12px;
+      line-height: 1.55;
+    }
+
+    .feedback {
+      text-align: center;
+      margin-top: 35px;
+      color: #777;
+      font-size: 13px;
+    }
+
+    .feedback strong {
+      color: #aaa;
+    }
+
+    footer {
+      margin-top: 60px;
+      padding-top: 20px;
+      border-top: 1px solid #1e1e1e;
+      color: #555;
+      font-size: 12px;
+      text-align: center;
+    }
+
+    @media (max-width: 760px) {
+      h1 {
+        font-size: 32px;
+      }
+
+      .search-box {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+      }
+
+      .metrics {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .observations {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
+
 <body>
-  <main>
-    <h1>SDIA</h1>
-    <div class="muted">ShadowNode Domain Intelligence Analyzer — Early Demo</div>
 
-    <section class="box">
-      <p>Analyze a domain using the ShadowNode intelligence engine.</p>
+  <main class="container">
 
-      <form id="form">
-        <input
-          id="domain"
-          type="text"
-          placeholder="example.com"
-          autocomplete="off"
-          required
-        >
-        <button id="analyze" type="submit">Analyze</button>
-      </form>
+    <header>
+      <div class="brand">SHADOWNODE</div>
 
-      <p id="status" class="muted"></p>
-    </section>
+      <h1>SDIA</h1>
 
-    <section id="results" class="box" hidden>
-      <h2 id="result-domain"></h2>
-
-      <div class="metrics">
-        <div class="metric">
-          Entities
-          <strong id="entities">—</strong>
-        </div>
-        <div class="metric">
-          Relationships
-          <strong id="relationships">—</strong>
-        </div>
-        <div class="metric">
-          Findings
-          <strong id="findings">—</strong>
-        </div>
-        <div class="metric">
-          Evidence
-          <strong id="evidence">—</strong>
-        </div>
+      <div class="subtitle">
+        ShadowNode Domain Intelligence Analyzer — Early Demo
       </div>
 
-      <h3>Response</h3>
-      <pre id="response"></pre>
-    </section>
+      <div class="search-box">
+        <input
+          id="domainInput"
+          type="text"
+          placeholder="Enter a domain, e.g. example.com"
+          autocomplete="off"
+        />
+
+        <button id="analyzeButton" onclick="analyzeDomain()">
+          ANALYZE
+        </button>
+      </div>
+
+      <div id="status" class="status"></div>
+    </header>
+
+
+    <!-- RESULTS -->
+    <div id="results" class="results">
+
+
+      <!-- ANALYSIS METRICS -->
+      <section class="section">
+
+        <div class="section-header">
+          <h2>Analysis Complete</h2>
+          <p>Structured intelligence collected by SDIA.</p>
+        </div>
+
+        <div class="section-body">
+
+          <div class="metrics">
+
+            <div class="metric">
+              <div class="metric-label">Entities</div>
+              <div id="entityCount" class="metric-value">0</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Relationships</div>
+              <div id="relationshipCount" class="metric-value">0</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Findings</div>
+              <div id="findingCount" class="metric-value">0</div>
+            </div>
+
+            <div class="metric">
+              <div class="metric-label">Evidence</div>
+              <div id="evidenceCount" class="metric-value">0</div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- EXECUTIVE SUMMARY -->
+      <section class="section">
+
+        <div class="section-header">
+          <h2>Executive Summary</h2>
+          <p>Concise intelligence overview generated from the investigation data.</p>
+        </div>
+
+        <div class="section-body">
+
+          <div id="summaryDomain" class="domain-line"></div>
+
+          <div id="observations" class="observations"></div>
+
+          <div id="ctNotice" class="notice" style="display:none;">
+            Certificate Transparency observations may represent historical or
+            certificate-associated infrastructure. Their presence does not by
+            itself establish that a hostname is currently live.
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- ANALYST REPORT -->
+      <section class="section">
+
+        <div class="section-header">
+          <h2>Analyst Report</h2>
+          <p>Preliminary report generated from SDIA investigation data.</p>
+        </div>
+
+        <div class="section-body">
+
+          <div class="analyst-warning">
+            <strong>Analyst Review Required</strong><br><br>
+
+            This report is generated from collected intelligence and is
+            subject to review, correction, interpretation, validation, or
+            dismissal by a qualified analyst.
+
+            Automated findings should not be treated as final investigative
+            conclusions without appropriate human review.
+          </div>
+
+          <div id="analystReport" class="report"></div>
+
+        </div>
+
+      </section>
+
+
+      <!-- RAW INTELLIGENCE -->
+      <section class="section">
+
+        <div class="section-header">
+          <h2>Raw Intelligence</h2>
+          <p>Complete API response preserved for inspection and verification.</p>
+        </div>
+
+        <div class="section-body">
+
+          <button
+            id="rawToggle"
+            class="raw-toggle"
+            onclick="toggleRaw()"
+          >
+            Show Full Raw JSON
+          </button>
+
+          <div id="rawContainer" class="raw-container">
+            <pre id="rawOutput"></pre>
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <!-- FEEDBACK -->
+      <div class="feedback">
+
+        <strong>Early Access</strong><br><br>
+
+        This is an early SDIA preview.
+        Found something useful, confusing, or missing?
+
+        Share your feedback on the LinkedIn post where you found this demo.
+
+      </div>
+
+    </div>
+
+
+    <footer>
+      ShadowNode Operations Bureau · SDIA v0.1.0
+    </footer>
+
   </main>
 
+
   <script>
+
     /*
-      Replace this URL with your deployed SDIA API endpoint.
+      IMPORTANT
 
-      IMPORTANT:
-      Do not put API keys, private credentials, or the SDIA source code here.
-      GitHub Pages is public.
+      This is the public demo frontend.
+
+      Do NOT put:
+      - API keys
+      - private credentials
+      - private SDIA source code
+      - secrets
+
+      in this file.
+
+      Replace this URL with your public API/gateway endpoint.
     */
-    const SDIA_API = "https://YOUR-SDIA-API-DOMAIN/api/v1/analyze/domain";
 
-    const form = document.getElementById("form");
-    const domainInput = document.getElementById("domain");
-    const button = document.getElementById("analyze");
-    const status = document.getElementById("status");
-    const results = document.getElementById("results");
+const SDIA_API =
+  "http://127.0.0.1:8000/api/v1/analyze/domain";
 
-    form.addEventListener("submit", async (event) => {
-      event.preventDefault();
 
-      const domain = domainInput.value.trim();
-      if (!domain) return;
+    async function analyzeDomain() {
+
+      const input =
+        document.getElementById("domainInput");
+
+      const button =
+        document.getElementById("analyzeButton");
+
+      const status =
+        document.getElementById("status");
+
+      const results =
+        document.getElementById("results");
+
+      const domain =
+        input.value.trim();
+
+
+      if (!domain) {
+
+        status.textContent =
+          "Enter a domain first.";
+
+        status.className =
+          "status error";
+
+        return;
+      }
+
 
       button.disabled = true;
-      status.textContent = "Analyzing...";
-      results.hidden = true;
+
+      button.textContent = "ANALYZING...";
+
+      status.textContent =
+        "Collecting domain intelligence...";
+
+      status.className =
+        "status";
+
+      results.classList.remove("visible");
+
 
       try {
-        const response = await fetch(SDIA_API, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({ domain })
-        });
 
-        const data = await response.json();
+        const response = await fetch(
+          SDIA_API,
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+              domain: domain
+            })
+          }
+        );
+
 
         if (!response.ok) {
-          throw new Error(data.detail || "Analysis failed.");
+
+          throw new Error(
+            "API returned HTTP " + response.status
+          );
+
         }
 
-        document.getElementById("result-domain").textContent =
-          data.investigation?.domain || domain;
 
-        document.getElementById("entities").textContent =
-          Array.isArray(data.entities) ? data.entities.length : "—";
+        const data =
+          await response.json();
 
-        document.getElementById("relationships").textContent =
-          Array.isArray(data.relationships) ? data.relationships.length : "—";
 
-        document.getElementById("findings").textContent =
-          Array.isArray(data.findings) ? data.findings.length : "—";
+        renderResults(data, domain);
 
-        document.getElementById("evidence").textContent =
-          Array.isArray(data.evidence) ? data.evidence.length : "—";
 
-        document.getElementById("response").textContent =
-          JSON.stringify(data, null, 2);
+        status.textContent =
+          "Analysis complete.";
 
-        results.hidden = false;
-        status.textContent = "Analysis complete.";
-      } catch (error) {
-        status.textContent = "Error: " + error.message;
-      } finally {
-        button.disabled = false;
+        status.className =
+          "status";
+
+
+        results.classList.add("visible");
+
       }
+
+      catch (error) {
+
+        console.error(error);
+
+        status.textContent =
+          "Analysis failed: " + error.message;
+
+        status.className =
+          "status error";
+
+      }
+
+      finally {
+
+        button.disabled = false;
+
+        button.textContent =
+          "ANALYZE";
+
+      }
+
+    }
+
+
+    function renderResults(data, fallbackDomain) {
+
+      const entities =
+        Array.isArray(data.entities)
+          ? data.entities
+          : [];
+
+      const relationships =
+        Array.isArray(data.relationships)
+          ? data.relationships
+          : [];
+
+      const findings =
+        Array.isArray(data.findings)
+          ? data.findings
+          : [];
+
+      const evidence =
+        Array.isArray(data.evidence)
+          ? data.evidence
+          : [];
+
+
+      /*
+        METRICS
+      */
+
+      document.getElementById(
+        "entityCount"
+      ).textContent = entities.length;
+
+
+      document.getElementById(
+        "relationshipCount"
+      ).textContent = relationships.length;
+
+
+      document.getElementById(
+        "findingCount"
+      ).textContent = findings.length;
+
+
+      document.getElementById(
+        "evidenceCount"
+      ).textContent = evidence.length;
+
+
+      /*
+        DOMAIN
+      */
+
+      const investigation =
+        data.investigation || {};
+
+      const domain =
+        investigation.domain ||
+        data.domain ||
+        fallbackDomain;
+
+
+      document.getElementById(
+        "summaryDomain"
+      ).innerHTML =
+        "<strong>Domain:</strong> " +
+        escapeHtml(domain);
+
+
+      /*
+        EXECUTIVE SUMMARY
+      */
+
+      buildSummary(
+        data,
+        entities,
+        relationships,
+        findings,
+        evidence
+      );
+
+
+      /*
+        ANALYST REPORT
+      */
+
+      buildAnalystReport(
+        data,
+        domain,
+        entities,
+        relationships,
+        findings,
+        evidence
+      );
+
+
+      /*
+        RAW OUTPUT
+      */
+
+      const rawOutput =
+        document.getElementById("rawOutput");
+
+      rawOutput.textContent =
+        JSON.stringify(data, null, 2);
+
+
+      /*
+        DISPLAY
+      */
+
+      document.getElementById("results").classList.add("visible");
+
+    }
+
+
+    function buildAnalystReport(
+      data,
+      domain,
+      entities,
+      relationships,
+      findings,
+      evidence
+    ) {
+
+      const report =
+    document.getElementById("analystReport");
+
+  const relationshipTypes =
+    new Set(
+      relationships
+        .map(r => r.relationship_type)
+        .filter(Boolean)
+    );
+
+
+  function hasRelationship(type) {
+    return relationshipTypes.has(type);
+  }
+
+
+  function findingMatches(...keywords) {
+    return findings.some(finding => {
+
+      const text =
+        JSON.stringify(finding).toLowerCase();
+
+      return keywords.some(keyword =>
+        text.includes(keyword.toLowerCase())
+      );
+
     });
+  }
+
+
+  function addSection(title, text) {
+
+    output +=
+      title.toUpperCase() +
+      "\n";
+
+    output +=
+      "-".repeat(title.length) +
+      "\n";
+
+    output +=
+      text +
+      "\n\n";
+
+  }
+
+
+  let output = "";
+
+
+  /*
+    REPORT HEADER
+  */
+
+  output +=
+    "PRELIMINARY ANALYST REPORT\n";
+
+  output +=
+    "==========================\n\n";
+
+  output +=
+    "Domain: " +
+    domain +
+    "\n";
+
+  if (data.tool) {
+
+    output +=
+      "Tool: " +
+      data.tool +
+      "\n";
+
+  }
+
+  if (data.tool_version) {
+
+    output +=
+      "Tool Version: " +
+      data.tool_version +
+      "\n";
+
+  }
+
+  if (data.schema_version) {
+
+    output +=
+      "Schema Version: " +
+      data.schema_version +
+      "\n";
+
+  }
+
+  output += "\n";
+
+
+  /*
+    1. INVESTIGATION SCOPE
+  */
+
+  addSection(
+    "1. Investigation Scope",
+
+    "The investigation collected publicly observable domain " +
+    "intelligence and produced " +
+    entities.length +
+    " entities, " +
+    relationships.length +
+    " relationships, " +
+    findings.length +
+    " findings and " +
+    evidence.length +
+    " evidence artifacts."
+  );
+
+
+  /*
+    2. DOMAIN & DNS
+  */
+
+  let dnsText = "";
+
+  if (hasRelationship("resolves_to")) {
+
+    dnsText +=
+      "DNS resolution observations were collected for the " +
+      "domain, including observed IP infrastructure.";
+
+  }
+
+  if (hasRelationship("uses_nameserver")) {
+
+    if (dnsText) {
+      dnsText += " ";
+    }
+
+    dnsText +=
+      "Nameserver relationships were also observed.";
+
+  }
+
+  if (!dnsText) {
+
+    dnsText =
+      "No DNS relationship observations were returned " +
+      "for this collection.";
+
+  }
+
+  addSection(
+    "2. Domain & DNS Observations",
+    dnsText
+  );
+
+
+  /*
+    3. NETWORK
+  */
+
+  let networkText = "";
+
+  if (hasRelationship("announced_by")) {
+
+    networkText =
+      "Observed IP infrastructure was associated with " +
+      "autonomous system information obtained during " +
+      "collection.";
+
+  }
+
+  if (
+    findingMatches(
+      "asn",
+      "autonomous system"
+    )
+  ) {
+
+    if (networkText) {
+      networkText += " ";
+    }
+
+    networkText +=
+      "The findings include ASN observations for " +
+      "observed IP addresses.";
+
+  }
+
+  if (!networkText) {
+
+    networkText =
+      "No network registration relationship observations " +
+      "were returned.";
+
+  }
+
+  addSection(
+    "3. Network Observations",
+    networkText
+  );
+
+
+  /*
+    4. HTTP
+  */
+
+  let httpText = "";
+
+  if (
+    findingMatches(
+      "http",
+      "cloudflare mitigation",
+      "http response"
+    )
+  ) {
+
+    httpText =
+      "HTTP response observations were collected from " +
+      "the analyzed endpoint.";
+
+  }
+
+  if (
+    findingMatches(
+      "403",
+      "forbidden"
+    )
+  ) {
+
+    httpText +=
+      " The collected HTTPS endpoint returned HTTP " +
+      "403 during the collection.";
+
+  }
+
+  if (
+    findingMatches(
+      "cloudflare"
+    )
+  ) {
+
+    httpText +=
+      " The response also contained indicators associated " +
+      "with Cloudflare infrastructure or mitigation.";
+
+  }
+
+  if (!httpText) {
+
+    httpText =
+      "No significant HTTP findings were returned " +
+      "for this collection.";
+
+  }
+
+  addSection(
+    "4. HTTP Observations",
+    httpText
+  );
+
+
+  /*
+    5. TLS & CERTIFICATES
+  */
+
+  let tlsText = "";
+
+  if (
+    hasRelationship("has_certificate") ||
+    findingMatches(
+      "tls",
+      "certificate",
+      "certificate issuer",
+      "certificate validity"
+    )
+  ) {
+
+    tlsText =
+      "TLS and certificate observations were collected " +
+      "during the investigation.";
+
+  }
+
+  if (
+    findingMatches(
+      "certificate sans",
+      "subject alternative names"
+    )
+  ) {
+
+    tlsText +=
+      " Certificate Subject Alternative Names were " +
+      "observed.";
+
+    tlsText +=
+      " Their presence on a certificate does not by " +
+      "itself establish that the associated hostnames " +
+      "are currently active.";
+
+  }
+
+  if (!tlsText) {
+
+    tlsText =
+      "No TLS or certificate findings were returned.";
+
+  }
+
+  addSection(
+    "5. TLS & Certificate Observations",
+    tlsText
+  );
+
+
+  /*
+    6. CERTIFICATE TRANSPARENCY
+  */
+
+  let ctText = "";
+
+  const hasCT =
+    hasRelationship("contains_hostname") ||
+    findingMatches(
+      "certificate transparency",
+      "ct certificates",
+      "certificate-associated hostnames"
+    );
+
+
+  if (hasCT) {
+
+    ctText =
+      "Certificate Transparency observations were " +
+      "identified during collection.";
+
+    if (
+      hasRelationship("contains_hostname") ||
+      findingMatches(
+        "certificate-associated hostnames"
+      )
+    ) {
+
+      ctText +=
+        " Certificate-associated hostnames were " +
+        "identified in the collected CT data.";
+
+    }
+
+    ctText +=
+      " These observations represent certificate-associated " +
+      "or historical information and do not independently " +
+      "establish current hostname liveness.";
+
+  } else {
+
+    ctText =
+      "No Certificate Transparency observations were " +
+      "returned.";
+
+  }
+
+  addSection(
+    "6. Certificate Transparency",
+    ctText
+  );
+
+
+  /*
+    7. INFRASTRUCTURE CORRELATIONS
+  */
+
+  let correlationText = "";
+
+  const hasSharedIP =
+    hasRelationship("shared_observed_ip") ||
+    findingMatches(
+      "shared ip infrastructure",
+      "shared observed ip"
+    );
+
+
+  const hasSharedASN =
+    findingMatches(
+      "share asn",
+      "shared asn",
+      "same autonomous system"
+    );
+
+
+  if (hasSharedIP) {
+
+    correlationText +=
+      "Multiple observations indicate shared observed " +
+      "IP infrastructure between certificate-associated " +
+      "hostnames and observed IP addresses.";
+
+  }
+
+
+  if (hasSharedASN) {
+
+    if (correlationText) {
+      correlationText += " ";
+    }
+
+    correlationText +=
+      "The findings also identify certificate-associated " +
+      "hostnames or observed IP addresses associated with " +
+      "the same observed autonomous system.";
+
+  }
+
+
+  if (
+    hasSharedIP ||
+    hasSharedASN
+  ) {
+
+    correlationText +=
+      " These relationships represent observed network " +
+      "infrastructure correlations and do not independently " +
+      "establish common ownership, administrative control, " +
+      "organizational affiliation, or an application-level " +
+      "relationship.";
+
+  }
+
+
+  if (!correlationText) {
+
+    correlationText =
+      "No infrastructure correlation findings were " +
+      "identified in the returned investigation data.";
+
+  }
+
+  addSection(
+    "7. Infrastructure Correlations",
+    correlationText
+  );
+
+
+  /*
+    8. EVIDENCE
+  */
+
+  let evidenceText = "";
+
+  if (evidence.length > 0) {
+
+    evidenceText =
+      evidence.length +
+      " evidence artifacts were preserved by the " +
+      "investigation pipeline.";
+
+    evidenceText +=
+      " The artifacts provide the underlying evidence " +
+      "references for the collected observations and " +
+      "derived relationships.";
+
+  } else {
+
+    evidenceText =
+      "No evidence artifacts were returned.";
+
+  }
+
+  addSection(
+    "8. Evidence",
+    evidenceText
+  );
+
+
+  /*
+    9. FINDINGS
+  */
+
+  let findingsText = "";
+
+  if (findings.length > 0) {
+
+    findingsText =
+      findings.length +
+      " findings were generated by SDIA.";
+
+    findingsText +=
+      " Individual findings should be evaluated against " +
+      "their supporting evidence before being treated as " +
+      "investigative conclusions.";
+
+  } else {
+
+    findingsText =
+      "No findings were generated.";
+
+  }
+
+  addSection(
+    "9. Findings",
+    findingsText
+  );
+
+
+  /*
+    10. ANALYST ASSESSMENT
+  */
+
+  addSection(
+    "10. Analyst Assessment",
+
+    "[Reserved for analyst review]\n\n" +
+
+    "This section is intentionally reserved for human " +
+    "analyst assessment.\n\n" +
+
+    "The analyst may validate, correct, reinterpret, " +
+    "qualify, or dismiss automated findings based on " +
+    "the available evidence, investigation context, " +
+    "additional intelligence, and applicable investigative " +
+    "standards.\n\n" +
+
+    "Automated SDIA findings should not be treated as final " +
+    "investigative conclusions without appropriate human review."
+  );
+
+
+  /*
+    FINAL REPORT NOTICE
+  */
+
+  output +=
+    "REPORT STATUS\n";
+
+  output +=
+    "-------------\n";
+
+  output +=
+    "Machine-generated preliminary report.\n";
+
+  output +=
+    "Human analyst review required before final investigative use.\n";
+
+
+  report.textContent =
+    output;
+
+}
+
+
+    function buildSummary(
+      data,
+      entities,
+      relationships,
+      findings,
+      evidence
+    ) {
+
+      const container =
+        document.getElementById(
+          "observations"
+        );
+
+      container.innerHTML = "";
+
+
+      const relationshipTypes =
+        new Set(
+          relationships
+            .map(r => r.relationship_type)
+            .filter(Boolean)
+        );
+
+
+      const observations = [];
+
+
+      /*
+        DNS / IP
+      */
+
+      if (
+        relationshipTypes.has("resolves_to")
+      ) {
+
+        observations.push(
+          "DNS resolution and IP infrastructure observed."
+        );
+
+      }
+
+
+      /*
+        Nameservers
+      */
+
+      if (
+        relationshipTypes.has("uses_nameserver")
+      ) {
+
+        observations.push(
+          "Nameserver infrastructure observed."
+        );
+
+      }
+
+
+      /*
+        ASN
+      */
+
+      if (
+        relationshipTypes.has("announced_by")
+      ) {
+
+        observations.push(
+          "ASN and network ownership observations available."
+        );
+
+      }
+
+
+      /*
+        Certificates
+      */
+
+      if (
+        relationshipTypes.has("has_certificate")
+      ) {
+
+        observations.push(
+          "TLS/certificate infrastructure observed."
+        );
+
+      }
+
+
+      /*
+        Certificate Transparency
+      */
+
+      const hasCT =
+        relationshipTypes.has(
+          "contains_hostname"
+        ) ||
+        hasFindingKeyword(
+          findings,
+          [
+            "certificate transparency",
+            "ct",
+            "certificate-associated",
+            "ct-associated"
+          ]
+        );
+
+
+      if (hasCT) {
+
+        observations.push(
+          "Certificate Transparency observations available."
+        );
+
+        document.getElementById(
+          "ctNotice"
+        ).style.display = "block";
+
+      } else {
+
+        document.getElementById(
+          "ctNotice"
+        ).style.display = "none";
+
+      }
+
+
+      /*
+        Shared infrastructure
+      */
+
+      if (
+        relationshipTypes.has(
+          "shared_observed_ip"
+        )
+      ) {
+
+        observations.push(
+          "Shared observed IP infrastructure relationships identified."
+        );
+
+      }
+
+
+      /*
+        Findings
+      */
+
+      if (findings.length > 0) {
+
+        observations.push(
+          findings.length +
+          " analytical finding" +
+          (findings.length === 1 ? "" : "s") +
+          " generated for analyst review."
+        );
+
+      }
+
+
+      /*
+        Evidence
+      */
+
+      if (evidence.length > 0) {
+
+        observations.push(
+          evidence.length +
+          " evidence artifact" +
+          (evidence.length === 1 ? "" : "s") +
+          " preserved."
+        );
+
+      }
+
+
+      /*
+        Fallback
+      */
+
+      if (observations.length === 0) {
+
+        observations.push(
+          "Structured investigation data was returned by SDIA."
+        );
+
+      }
+
+
+      observations.forEach(
+        observation => {
+
+          const div =
+            document.createElement("div");
+
+          div.className =
+            "observation";
+
+          div.textContent =
+            observation;
+
+          container.appendChild(div);
+
+        }
+      );
+
+    }
+
+
+    function buildAnalystReport(
+      data,
+      domain,
+      entities,
+      relationships,
+      findings,
+      evidence
+    ) {
+
+      const report =
+        document.getElementById(
+          "analystReport"
+        );
+
+
+      const relationshipCounts = {};
+
+
+      relationships.forEach(
+        relationship => {
+
+          const type =
+            relationship.relationship_type ||
+            "unknown";
+
+          relationshipCounts[type] =
+            (relationshipCounts[type] || 0) + 1;
+
+        }
+      );
+
+
+      let output = "";
+
+
+      output +=
+        "PRELIMINARY DOMAIN INTELLIGENCE REPORT\n";
+
+      output +=
+        "======================================\n\n";
+
+
+      output +=
+        "Domain: " +
+        domain +
+        "\n";
+
+
+      if (data.tool) {
+
+        output +=
+          "Tool: " +
+          data.tool +
+          "\n";
+
+      }
+
+
+      if (data.tool_version) {
+
+        output +=
+          "Tool Version: " +
+          data.tool_version +
+          "\n";
+
+      }
+
+
+      if (data.schema_version) {
+
+        output +=
+          "Schema Version: " +
+          data.schema_version +
+          "\n";
+
+      }
+
+
+      output += "\n";
+
+
+      output +=
+        "INVESTIGATION OVERVIEW\n";
+
+      output +=
+        "----------------------\n";
+
+      output +=
+        "Entities observed: " +
+        entities.length +
+        "\n";
+
+      output +=
+        "Relationships observed/derived: " +
+        relationships.length +
+        "\n";
+
+      output +=
+        "Findings generated: " +
+        findings.length +
+        "\n";
+
+      output +=
+        "Evidence artifacts: " +
+        evidence.length +
+        "\n\n";
+
+
+      output +=
+        "RELATIONSHIP OBSERVATIONS\n";
+
+      output +=
+        "-------------------------\n";
+
+
+      Object.entries(
+        relationshipCounts
+      ).forEach(
+        ([type, count]) => {
+
+          output +=
+            "- " +
+            formatRelationshipType(type) +
+            ": " +
+            count +
+            "\n";
+
+        }
+      );
+
+
+      if (
+        Object.keys(relationshipCounts).length === 0
+      ) {
+
+        output +=
+          "- No relationship observations were returned.\n";
+
+      }
+
+
+      output += "\n";
+
+
+      output +=
+        "FINDINGS\n";
+
+      output +=
+        "--------\n";
+
+
+      if (findings.length === 0) {
+
+        output +=
+          "No findings were returned.\n";
+
+      } else {
+
+        findings.forEach(
+          (finding, index) => {
+
+            const name =
+              finding.name ||
+              finding.title ||
+              finding.category ||
+              finding.finding_type ||
+              "Finding " + (index + 1);
+
+
+            output +=
+              (index + 1) +
+              ". " +
+              name +
+              "\n";
+
+
+            if (finding.description) {
+
+              output +=
+                "   " +
+                finding.description +
+                "\n";
+
+            }
+
+
+            if (finding.confidence) {
+
+              output +=
+                "   Confidence: " +
+                finding.confidence +
+                "\n";
+
+            }
+
+          }
+        );
+
+      }
+
+
+      output += "\n";
+
+
+      output +=
+        "EVIDENCE\n";
+
+      output +=
+        "--------\n";
+
+
+      if (evidence.length === 0) {
+
+        output +=
+          "No evidence artifacts were returned.\n";
+
+      } else {
+
+        output +=
+          evidence.length +
+          " evidence artifacts were preserved by the investigation pipeline.\n";
+
+      }
+
+
+      output += "\n";
+
+
+      output +=
+        "ANALYST REVIEW\n";
+
+      output +=
+        "--------------\n";
+
+      output +=
+        "This is a preliminary machine-generated report.\n";
+
+      output +=
+        "The observations and findings require human analyst review.\n";
+
+      output +=
+        "An analyst may correct, reinterpret, validate, qualify, or dismiss individual findings based on the available evidence and investigation context.\n";
+
+
+      report.textContent =
+        output;
+
+    }
+
+
+    function toggleRaw() {
+
+      const container =
+        document.getElementById(
+          "rawContainer"
+        );
+
+      const button =
+        document.getElementById(
+          "rawToggle"
+        );
+
+
+      const isOpen =
+        container.classList.toggle(
+          "open"
+        );
+
+
+      button.textContent =
+        isOpen
+          ? "Hide Full Raw JSON"
+          : "Show Full Raw JSON";
+
+    }
+
+
+    function hasFindingKeyword(
+      findings,
+      keywords
+    ) {
+
+      return findings.some(
+        finding => {
+
+          const text =
+            JSON.stringify(
+              finding
+            ).toLowerCase();
+
+          return keywords.some(
+            keyword =>
+              text.includes(
+                keyword.toLowerCase()
+              )
+          );
+
+        }
+      );
+
+    }
+
+
+    function formatRelationshipType(
+      value
+    ) {
+
+      return value
+        .replace(/_/g, " ")
+        .replace(/\b\w/g, char =>
+          char.toUpperCase()
+        );
+
+    }
+
+
+    function escapeHtml(value) {
+
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    }
+
+
+    /*
+      Allow Enter key to run an analysis.
+    */
+
+    document
+      .getElementById("domainInput")
+      .addEventListener(
+        "keydown",
+        event => {
+
+          if (event.key === "Enter") {
+
+            analyzeDomain();
+
+          }
+
+        }
+      );
+
   </script>
+
 </body>
 </html>
