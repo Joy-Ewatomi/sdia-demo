@@ -1,6 +1,4 @@
-Absolutely. Copy the **entire block below** into your `README.md` file:
 
-````markdown
 # SDIA Demo
 
 **ShadowNode Domain Intelligence Analyzer — Public Demo**
